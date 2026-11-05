@@ -9,7 +9,7 @@ st.write("Analýza výsledků od sezóny 1965/66 do 2025/26")
 @st.cache_data
 def nacti_data():
     # Načte vaše CSV s hokejem
-    df = pd.read_csv("Kladno_Data.csv", sep=";")
+    df = pd.read_csv("Kladno_Data.csv", sep="\t")
     
     # OPRAVNÝ MECHANISMUS PRO SLOUPCE:
     # Převede všechny názvy sloupců na malá písmena a odstraní mezery
