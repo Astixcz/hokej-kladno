@@ -60,7 +60,7 @@ try:
             sezony = df['sezona'].unique()
             zaznamy = []
             
-            for sezona in Bound_sezony if (sezony := df['sezona'].unique()) is not None else []:
+            for sezona in sezony:
                 sub_df = df[(df['sezona'] == sezona) & (df['kumul_3b'] >= cilove_body)]
                 if not sub_df.empty:
                     prvni_zapas = sub_df['poradi'].min()
