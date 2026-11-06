@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 
 st.set_page_config(page_title="Kladenská Hokejová Historie", layout="wide")
 
@@ -51,23 +50,36 @@ try:
                     "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
                 ]
                 
-                # Vytvoření jasného textového sloupce pro soutěž
+                # Definice kategorií
+                kat_extraliga = 'Extraliga (Nejvyšší)'
+                kat_1liga = '1. liga (Nižší)'
+                
                 vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
+                    lambda x: kat_1liga if str(x).strip() in nizsi_soutez else kat_extraliga
                 )
                 
-                # VYTVOŘENÍ STRIKTNÍHO GRAFU POMOCÍ ALTAIRU
-                # Zde natvrdo svážeme konkrétní text s konkrétní barvou
-                graf = alt.Chart(vysledek).mark_bar().encode(
-                    x=alt.X('Sezóna:N', sort=None, title='Sezóna'),
-                    y=alt.Y('Přepočtené body (3b):Q', title='Přepočtené body (3b)'),
-                    color=alt.Color('Soutěž:N', scale=alt.Scale(
-                        domain=['Extraliga (Nejvyšší)', '1. liga (Nižší)'],
-                        range=['#1F77B4', '#FF4B4B']
-                    ), title='Soutěž')
-                ).properties(height=400).interactive()
+                # TRIK PRO ZÁCHRANU BAREV:
+                # Vytvoříme pomocnou tabulku pro graf, kam přidáme dva skryté nulové řádky
+                # Jeden pro Extraligu a jeden pro 1. ligu. Tím zajistíme, že v paletě budou vždy obě verze.
+                graf_df = vysledek.copy()
+                pomocne_radky = pd.DataFrame([
+                    {'Sezóna': ' ', 'Přepočtené body (3b)': 0, 'Soutěž': kat_extraliga},
+                    {'Sezóna': '  ', 'Přepočtené body (3b)': 0, 'Soutěž': kat_1liga}
+                ])
+                graf_df = pd.concat([graf_df, pomocne_radky], ignore_index=True)
                 
-                st.altair_chart(graf, use_container_width=True)
+                # Použijeme původní krásný st.bar_chart s definovanou barevnou škálou (vynutíme pořadí barev)
+                st.bar_chart(
+                    graf_df,
+                    x="Sezóna",
+                    y="Přepočtené body (3b)",
+                    color="Soutěž",
+                    color_config={
+                        kat_extraliga: "#1F77B4",  # Pevná modrá
+                        kat_1liga: "#FF4B4B"      # Pevná červená
+                    },
+                    use_container_width=True
+                )
                 
                 st.markdown("""
                 🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
