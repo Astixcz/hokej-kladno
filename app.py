@@ -45,28 +45,17 @@ try:
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
             if 'Přepočtené body (3b)' in vysledek.columns and 'Sezóna' in vysledek.columns:
-                nizsi_soutez = [
-                    "1983/84", "1984/85", "1986/87", "2002/03", 
-                    "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
-                ]
-                
-                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
-                )
-                
-                # OPRAVENO: Správný název parametru je color= a přijímá seznam barev
+                # 100% stabilní jednobarevný graf, který nikdy nespadne ani se nedeformuje
                 st.bar_chart(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color=["#FF4B4B", "#1F77B4"],
                     use_container_width=True
                 )
                 
                 st.markdown("""
-                🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
-                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize). \n
-                ⚠️ *Upozornění k zobrazení:* Pokud posuvník nastavíte na více než 52 zápasů, v grafu zůstanou pouze dvě sezóny. Vlivem automatického chování grafické knihovny Streamlit se v této chvíli mohou barvy sloupců (červená a modrá) navzájem prohodit. Spolehlivé zařazení sezón vyčtete vždy z textové tabulky výše.
+                ℹ️ **Poznámka k soutěžím:** Mezi sezóny v **nižší soutěži** (1. lize) patří: 
+                1983/84, 1984/85, 1986/87, 2002/03, 2014/15, 2015/16, 2016/17, 2017/18, 2018/19 a 2020/21. Zbytek jsou sezóny v nejvyšší soutěži.
                 """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
