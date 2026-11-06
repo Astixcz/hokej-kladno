@@ -63,15 +63,25 @@ try:
                     "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
                 ]
                 
-                # Vytvoření barevného profilu pro každou sezónu v grafu
-                vysledek['barva'] = vysledek['Sezóna'].apply(lambda x: '#FF4B4B' if str(x).strip() in nizsi_soutez else '#1F77B4')
+                # Vytvoříme jasně pojmenovaný sloupec s kategorií soutěže
+                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
+                    lambda x: 'Nižší soutěž (1. liga)' if str(x).strip() in nizsi_soutez else 'Nejvyšší soutěž (Extralize)'
+                )
                 
-                # Vykreslení pokročilejšího grafu s vlastními barvami
+                # PEVNÉ MAPOVÁNÍ BAREV: Definujeme, že Nejvyšší je modrá (#1F77B4) a Nižší je červená (#FF4B4B)
+                # Tím vynutíme stálost barev i při malém počtu řádků
+                barevna_paleta = {
+                    'Nejvyšší soutěž (Extralize)': '#1F77B4',
+                    'Nižší soutěž (1. liga)': '#FF4B4B'
+                }
+                
+                # Vykreslení grafu s fixní paletou barev
                 st.bar_chart(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color="barva",
+                    color="Soutěž",
+                    vuer_config=None,
                     use_container_width=True
                 )
                 
