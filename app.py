@@ -32,7 +32,8 @@ try:
         
         if 'poradi' in df.columns:
             max_zapasu = int(df['poradi'].max())
-            pocet_zapasu = st.slider("Zadejte počet odehraných zápasů v sezóně:", 1, max_zapasu, 10)
+            # Defaultní hodnota nastavena na 17
+            pocet_zapasu = st.slider("Zadejte počet odehraných zápasů v sezóně:", 1, max_zapasu, 17)
             
             dostupne_sloupce = [col for col in ['sezona', 'kumul_realne', 'kumul_3b', 'poznamka'] if col in df.columns]
             vysledek = df[df['poradi'] == pocet_zapasu][dostupne_sloupce].copy()
@@ -123,6 +124,8 @@ try:
         st.markdown("""
         ### 💡 Návod k funkcím aplikace
         
+        📌 **Tip pro práci s tabulkami:** Kliknutím na libovolný název záhlaví sloupce (např. *Reálné body*, *Přepočtené body* nebo *Potřebný počet zápasů*) můžete data v tabulce okamžitě **vzestupně nebo sestupně seřadit**. To vám umožní bleskově najít ty historicky nejlepší a nejhorší sezóny!
+        
         #### 1) Záložka: Kolik bodů po X zápasech?
         * **K čemu slouží:** Pomocí posuvníku (slideru) si zvolíte konkrétní odehraný zápas od začátku základní části (např. 10. zápas sezóny). 
         * **Co uvidíte:** Aplikace vám okamžitě porovná všechny sezóny od roku 1965 a ukáže, kolik bodů v tomto konkrétním okamžiku Kladno mělo. Všechny bodové zisky jsou pro spravedlivé srovnání **dopočítané do jednotného moderního tříbodového systému** (Výhra = 3 body, Remíza/Výhra v prodloužení = podle dobových specifikací v datech). 
@@ -135,16 +138,10 @@ try:
         ---
         
         ### 🔄 Vývoj bodového systému v historii
-        * **Do sezóny 1999/00:** Platil klasický 2bodový systém (2 body za výhru, 1 za remízu). V aplikaci jsou tyto sezóny pro spravedlivé srovnání matematicky přepočteny na moderní model (Výhra = 3 body, Remíza = 1 bod).
-        * **Od sezóny 2006/07:** Kompletní zrušení remíz v české Extralize. Zavedeny samostatné nájezdy (vítěz bere 2 body, poražený v prodloužení/nájezdech 1 bod).
-        
-        ### ⏱️ Zavedení prodloužení
-        1. **Sezóny 1983/84 – 1985/86:** V československé lize poprvé krátce zavedeno pětiminutové prodloužení systémem „náhlé smrti“. Pokud gól nepadl, zápas přesto skončil remízou.
-        2. **1986–1993:** Prodloužení bylo zrušeno, po 60 minutách následovala okamžitá remíza.
-        3. **Od 1993/94:** Prodloužení vráceno natrvalo (nejdříve v klasickém formátu 5 na 5, od sezóny 1999/00 atraktivnější formát 4 na 4).
-        
-        ⚠️ *Poznámka k sezóně 2010/11:* V této sezóně postihla český hokej tzv. **odpočtová aféra** za neoprávněné starty hráčů (včetně Kladna). Zápasy odehrané na ledě a body získané u zeleného stolu se proto mohou lišit.
+        * **Do sezóny 1999/00:** Platil klasický 2bodový systém (2 body za výhru, 1 bod za remízu po 60 minutách).
+        * **Od sezóny 2000/01:** Došlo k celorepublikovému zavedení současného 3bodového systému (3 body za výhru v základní hrací době, 2 body za výhru v prodloužení/nájezdech, 1 bod za prohru v prodloužení/nájezdech).
+        * **Smysl této kalkulačky:** Abychom dokázali objektivně porovnat sílu týmu napříč dekádami, tato aplikace přepočítává všechny historické zápasy na moderní 3bodový standard.
         """)
 
 except Exception as e:
-    st.error(f"Chyba při načítání dat: {e}")
+    st.error(f"Došlo k chybě při načítání nebo zpracování dat: {e}")
