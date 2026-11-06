@@ -54,13 +54,12 @@ try:
                     lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
                 )
                 
-                # ZDE VYNUTÍME PRAVÉ BARVY: První barva je pro '1. liga', druhá pro 'Extraliga'
+                # OPRAVENO: Správný název parametru je color= a přijímá seznam barev
                 st.bar_chart(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color="Soutěž",
-                    colors=["#FF4B4B", "#1F77B4"],
+                    color=["#FF4B4B", "#1F77B4"],
                     use_container_width=True
                 )
                 
@@ -89,10 +88,6 @@ try:
                         "Sezóna": sezona, "Potřebný počet zápasů": int(prvni_zapas), "Reálné body v té chvíli": realne_body
                     })
                 else:
-                    nizsi_soutez_sezony = [
-                        "1983/84", "1984/85", "1986/87", "2002/03", 
-                        "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
-                    ]
                     zaznamy.append({
                         "Sezóna": sezona, "Potřebný počet zápasů": "Nedosáhnuto", "Reálné body v té chvíli": "-"
                     })
