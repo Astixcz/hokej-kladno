@@ -50,34 +50,30 @@ try:
                     "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
                 ]
                 
-                # Definice kategorií
-                kat_extraliga = 'Extraliga (Nejvyšší)'
-                kat_1liga = '1. liga (Nižší)'
+                # Příprava barev jako textových hodnot
+                barva_extraliga = '#1F77B4'  # Modrá
+                barva_1liga = '#FF4B4B'      # Červená
                 
                 vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: kat_1liga if str(x).strip() in nizsi_soutez else kat_extraliga
+                    lambda x: barva_1liga if str(x).strip() in nizsi_soutez else barva_extraliga
                 )
                 
                 # TRIK PRO ZÁCHRANU BAREV:
-                # Vytvoříme pomocnou tabulku pro graf, kam přidáme dva skryté nulové řádky
-                # Jeden pro Extraligu a jeden pro 1. ligu. Tím zajistíme, že v paletě budou vždy obě verze.
+                # Přidáme na konec grafu dva neviditelné řádky s prázdným názvem sezóny, které mají 0 bodů.
+                # Tím zajistíme, že v datech jsou vždy přítomny obě barvy a Streamlit je nikdy neotočí.
                 graf_df = vysledek.copy()
                 pomocne_radky = pd.DataFrame([
-                    {'Sezóna': ' ', 'Přepočtené body (3b)': 0, 'Soutěž': kat_extraliga},
-                    {'Sezóna': '  ', 'Přepočtené body (3b)': 0, 'Soutěž': kat_1liga}
+                    {'Sezóna': ' ', 'Přepočtené body (3b)': 0, 'Soutěž': barva_extraliga},
+                    {'Sezóna': '  ', 'Přepočtené body (3b)': 0, 'Soutěž': barva_1liga}
                 ])
                 graf_df = pd.concat([graf_df, pomocne_radky], ignore_index=True)
                 
-                # Použijeme původní krásný st.bar_chart s definovanou barevnou škálou (vynutíme pořadí barev)
+                # Vykreslení původního skvělého grafu se správnou chronologií i popisky
                 st.bar_chart(
                     graf_df,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
                     color="Soutěž",
-                    color_config={
-                        kat_extraliga: "#1F77B4",  # Pevná modrá
-                        kat_1liga: "#FF4B4B"      # Pevná červená
-                    },
                     use_container_width=True
                 )
                 
