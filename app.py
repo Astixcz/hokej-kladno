@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 st.set_page_config(page_title="Kladenská Hokejová Historie", layout="wide")
 
@@ -45,17 +46,40 @@ try:
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
             if 'Přepočtené body (3b)' in vysledek.columns and 'Sezóna' in vysledek.columns:
-                # 100% stabilní jednobarevný graf, který nikdy nespadne ani se nedeformuje
-                st.bar_chart(
+                nizsi_soutez = [
+                    "1983/84", "1984/85", "1986/87", "2002/03", 
+                    "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
+                ]
+                
+                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
+                    lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
+                )
+                
+                # Profesionální graf pomocí Plotly Express s nekompromisním mapováním barev
+                fig = px.bar(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    use_container_width=True
+                    color="Soutěž",
+                    color_discrete_map={
+                        "Extraliga (Nejvyšší)": "#1F77B4",  # Pevná modrá
+                        "1. liga (Nižší)": "#FF4B4B"        # Pevná červená
+                    },
+                    labels={"Přepočtené body (3b)": "Body (3b)"},
+                    template="plotly_white"
                 )
                 
+                # Doladění vzhledu grafu, aby lícoval s aplikací
+                fig.update_layout(
+                    margin=dict(l=0, r=0, t=20, b=0),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+                
                 st.markdown("""
-                ℹ️ **Poznámka k soutěžím:** Mezi sezóny v **nižší soutěži** (1. lize) patří: 
-                1983/84, 1984/85, 1986/87, 2002/03, 2014/15, 2015/16, 2016/17, 2017/18, 2018/19 a 2020/21. Zbytek jsou sezóny v nejvyšší soutěži.
+                🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
+                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
                 """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
@@ -72,7 +96,11 @@ try:
                 sub_df = df[(df['sezona'] == sezona) & (df['kumul_3b'] >= cilove_body)]
                 if not sub_df.empty:
                     prvni_zapas = sub_df['poradi'].min()
-                    realne_body = int(sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values) if 'kumul_realne' in df.columns else "-"
+                    
+                    # OPRAVA CHYBY SCALARS: Vytáhneme hodnotu bezpečně pomocí indexu [0] pro případ duplicit
+                    hodnoty_realne = sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values
+                    realne_body = int(hodnoty_realne[0]) if len(hodnoty_realne) > 0 and 'kumul_realne' in df.columns else "-"
+                    
                     zaznamy.append({
                         "Sezóna": sezona, "Potřebný počet zápasů": int(prvni_zapas), "Reálné body v té chvíli": realne_body
                     })
