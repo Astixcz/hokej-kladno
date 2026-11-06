@@ -61,14 +61,13 @@ try:
                     y="Přepočtené body (3b)",
                     color="Soutěž",
                     color_discrete_map={
-                        "Extraliga (Nejvyšší)": "#1F77B4",  # Pevná modrá
-                        "1. liga (Nižší)": "#FF4B4B"        # Pevná červená
+                        "Extraliga (Nejvyšší)": "#1F77B4",
+                        "1. liga (Nižší)": "#FF4B4B"
                     },
                     labels={"Přepočtené body (3b)": "Body (3b)"},
                     template="plotly_white"
                 )
                 
-                # KLÍČOVÁ OPRAVA: Seřadit osu X striktně podle chronologického pořadí v tabulce
                 fig.update_xaxes(
                     categoryorder="array", 
                     categoryarray=vysledek['Sezóna'],
@@ -84,8 +83,7 @@ try:
                 
                 st.markdown("""
                 🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
-                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize). \n
-                ⚠️ *Upozornění k zobrazení:* Pokud posuvník nastavíte na více než 52 zápasů, v grafu zůstanou pouze dvě sezóny. Vlivem automatického chování grafické knihovny Streamlit se v této chvíli mohou barvy sloupců (červená a modrá) navzájem prohodit. Spolehlivé zařazení sezón vyčtete vždy z textové tabulky výše.
+                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
                 """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
@@ -127,7 +125,8 @@ try:
         
         #### 1) Záložka: Kolik bodů po X zápasech?
         * **K čemu slouží:** Pomocí posuvníku (slideru) si zvolíte konkrétní odehraný zápas od začátku základní části (např. 10. zápas sezóny). 
-        * **Co uvidíte:** Aplikace vám okamžitě porovná všechny sezóny od roku 1965 a ukáže, kolik bodů v tomto konkrétním okamžiku Kladno mělo. Můžete tak snadno porovnat historické starty do sezón. Graf dole vám vizuálně ukáže nejúspěšnější roky.
+        * **Co uvidíte:** Aplikace vám okamžitě porovná všechny sezóny od roku 1965 a ukáže, kolik bodů v tomto konkrétním okamžiku Kladno mělo. Všechny bodové zisky jsou pro spravedlivé srovnání **dopočítané do jednotného moderního tříbodového systému** (Výhra = 3 body, Remíza/Výhra v prodloužení = podle dobových specifikací v datech). 
+        * **Důležité upozornění:** Pokud na posuvníku nastavíte vyšší počet zápasů, než kolik se v daném historickém roce celkem odehrálo, tato konkrétní sezóna z tabulky i z grafu **automaticky zmizí** (nemá pro tento bod žádná data). Graf dole vám vizuálně srovná všechny aktivní sezóny vedle sebe.
         
         #### 2) Záložka: Kolik zápasů na X bodů?
         * **K čemu slouží:** Zadáte cílové číslo (např. 20 bodů) a aplikace prohledá historii Kladna.
