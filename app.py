@@ -45,41 +45,18 @@ try:
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
             if 'Přepočtené body (3b)' in vysledek.columns and 'Sezóna' in vysledek.columns:
-                nizsi_soutez = [
-                    "1983/84", "1984/85", "1986/87", "2002/03", 
-                    "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
-                ]
-                
-                # Příprava barev jako textových hodnot
-                barva_extraliga = '#1F77B4'  # Modrá
-                barva_1liga = '#FF4B4B'      # Červená
-                
-                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: barva_1liga if str(x).strip() in nizsi_soutez else barva_extraliga
-                )
-                
-                # TRIK PRO ZÁCHRANU BAREV:
-                # Přidáme na konec grafu dva neviditelné řádky s prázdným názvem sezóny, které mají 0 bodů.
-                # Tím zajistíme, že v datech jsou vždy přítomny obě barvy a Streamlit je nikdy neotočí.
-                graf_df = vysledek.copy()
-                pomocne_radky = pd.DataFrame([
-                    {'Sezóna': ' ', 'Přepočtené body (3b)': 0, 'Soutěž': barva_extraliga},
-                    {'Sezóna': '  ', 'Přepočtené body (3b)': 0, 'Soutěž': barva_1liga}
-                ])
-                graf_df = pd.concat([graf_df, pomocne_radky], ignore_index=True)
-                
-                # Vykreslení původního skvělého grafu se správnou chronologií i popisky
+                # Jednotná fixní modrá barva pro celý graf – stabilní a spolehlivé řešení
                 st.bar_chart(
-                    graf_df,
+                    vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color="Soutěž",
+                    color="#1F77B4",
                     use_container_width=True
                 )
                 
                 st.markdown("""
-                🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
-                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
+                ℹ️ **Poznámka k soutěžím:** Graf zobrazuje historický vývoj bodů. Mezi sezóny v **nižší soutěži** (1. lize) patří: 
+                1983/84, 1984/85, 1986/87, 2002/03, 2014/15, 2015/16, 2016/17, 2017/18, 2018/19 a 2020/21.
                 """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
