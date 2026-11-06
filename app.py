@@ -4,7 +4,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Kladenská Hokejová Historie", layout="wide")
 
-st.title("🏒 Historická hokejová kalkulačka Kladna")
+st.title("🏒 Historická hokejová kalkulačka Kladna — Verze 1.0")
 st.write("Analýza výsledků od sezóny 1965/66 do 2025/26")
 
 @st.cache_data
@@ -31,6 +31,25 @@ try:
         "1983/84", "1984/85", "1986/87", "2002/03", 
         "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
     ]
+    
+    titulove_sezony = [
+        "1974/75", "1975/76", "1976/77", "1977/78", "1979/80"
+    ]
+
+    def urci_kategorii(sezona_str):
+        sezona_clean = str(sezona_str).strip()
+        if sezona_clean in titulove_sezony:
+            return "Mistrovská sezóna (Titul)"
+        elif sezona_clean in nizsi_soutez:
+            return "1. liga (Nižší soutěž)"
+        else:
+            return "Extraliga (Nejvyšší soutěž)"
+
+    barevna_mapa = {
+        "Mistrovská sezóna (Titul)": "#FFD700",
+        "Extraliga (Nejvyšší soutěž)": "#1F77B4",
+        "1. liga (Nižší soutěž)": "#FF4B4B"
+    }
 
     if verze == "1) Kolik bodů po X zápasech?":
         st.header("📊 Bodový stav po odehraných zápasech")
@@ -50,25 +69,20 @@ try:
             if not vysledek.empty and 'Přepočtené body (3b)' in vysledek.columns:
                 max_body_v_koliku = vysledek['Přepočtené body (3b)'].max()
                 nej_sezony = vysledek[vysledek['Přepočtené body (3b)'] == max_body_v_koliku]['Sezóna'].tolist()
-                st.info(f"🏆 **Historický rekord Kladna:** Po {pocet_zapasu} zápasech byla nejúspěšnější sezóna **{', '.join(nej_sezony)}** ({max_body_v_koliku} bodů po přepočtu na 3b systém).")
+                st.info(f"🏆 Historický rekord Kladna: Po {pocet_zapasu} zápasech byla nejúspěšnější sezóna {', '.join(nej_sezony)} ({max_body_v_koliku} bodů po přepočtu na 3b systém).")
 
             st.subheader(f"Stav Kladna po {pocet_zapasu}. odehraném zápase:")
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
             if 'Přepočtené body (3b)' in vysledek.columns and 'Sezóna' in vysledek.columns:
-                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
-                )
+                vysledek['Kategorie'] = vysledek['Sezóna'].apply(urci_kategorii)
                 
                 fig = px.bar(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color="Soutěž",
-                    color_discrete_map={
-                        "Extraliga (Nejvyšší)": "#1F77B4",
-                        "1. liga (Nižší)": "#FF4B4B"
-                    },
+                    color="Kategorie",
+                    color_discrete_map=barevna_mapa,
                     labels={"Přepočtené body (3b)": "Body (3b)"},
                     template="plotly_white"
                 )
@@ -80,10 +94,7 @@ try:
                 )
                 st.plotly_chart(fig, use_container_width=True)
                 
-                st.markdown("""
-                🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
-                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
-                """)
+                st.markdown("👑 **Zlaté sloupce** značí sezóny s mistrovským titulem.  \n🔵 **Modré sloupce** značí standardní sezóny v nejvyšší soutěži.  \n🔴 **Červeně zvýrazněné sloupce** značí sezóny v nižší soutěži.")
         else:
             st.error("V souboru chybí sloupec pro pořadí zápasů.")
 
@@ -121,9 +132,7 @@ try:
             
             if not graf_df.empty:
                 graf_df["Potřebný počet zápasů"] = pd.to_numeric(graf_df["Potřebný počet zápasů"])
-                graf_df['Soutěž'] = graf_df['Sezóna'].apply(
-                    lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
-                )
+                graf_df['Kategorie'] = graf_df['Sezóna'].apply(urci_kategorii)
                 
                 graf_df = graf_df.sort_values(by="Potřebný počet zápasů", ascending=True)
 
@@ -134,11 +143,8 @@ try:
                     graf_df,
                     x="Sezóna",
                     y="Potřebný počet zápasů",
-                    color="Soutěž",
-                    color_discrete_map={
-                        "Extraliga (Nejvyšší)": "#1F77B4",
-                        "1. liga (Nižší)": "#FF4B4B"
-                    },
+                    color="Kategorie",
+                    color_discrete_map=barevna_mapa,
                     labels={"Potřebný počet zápasů": "Počet zápasů k metě"},
                     template="plotly_white"
                 )
@@ -157,30 +163,30 @@ try:
     elif verze == "3) Historické poznámky a pravidla":
         st.header("📝 Jak kalkulačka funguje & Historický kontext")
         st.markdown("""
-        ### 💡 Návod k funkcím aplikace
+        ### Návod k funkcím aplikace
         
-        📌 **Tip pro práci s tabulkami:** Kliknutím na libovolný název záhlaví sloupce můžete data v tabulce okamžitě **vzestupně nebo sestupně seřadit**. To vám umožní bleskově najít ty historicky nejlepší a nejhorší sezóny!
-        
-        #### 1) Záložka: Kolik bodů po X zápasech?
-        * **K čemu slouží:** Pomocí posuvníku si zvolíte konkrétní odehraný zápas od začátku základní části.
-        * **Co uvidíte:** Aplikace okamžitě porovná všechny sezóny od roku 1965 a ukáže přepočtený stav bodů.
-        * **Důležité upozornění:** Pokud nastavíte vyšší počet zápasů, než se tehdy odehrálo, sezóna z grafů i tabulky zmizí.
-        
-        #### 2) Záložka: Kolik zápasů na X bodů?
-        * **K čemu slouží:** Zadáte cílové číslo a aplikace najde, jak rychle na něj Kladno dosáhlo.
-        * **Co uvidíte:** Číslo zápasu, kdy byla meta poprvé pokořena. Pokud se tak nestalo, uvidíte text 'Nedosáhnuto'. **Pokud zaškrtnete políčko pro skrytí, tyto neúspěšné sezóny se v tabulce vůbec nezobrazí.**
+        * **Tip pro řazení:** Kliknutím na název sloupce můžete tabulky okamžitě seřadit.
+        * **Záložka 1:** Porovnává bodový stav po zvoleném zápase základní části. Pokud v daném roce tým odehrál méně zápasů, než je nastaveno, sezóna se skryje.
+        * **Záložka 2:** Ukazuje, jak rychle tým dosáhl zadané bodové mety. Pokud zaškrtnete schování neúspěšných sezón, řádky s textem Nedosáhnuto se skryjí.
         
         ---
 
-        ### 🔍 Vysvětlení pojmů (Body v aplikaci)
-        * **Reálné body:** Skutečný stav, jaký tehdy platil v oficiální ligové tabulce (např. do roku 2000 byly za výhru jen 2 body).
-        * **Přepočtené body (3b):** Hlavní motor kalkulačky. Ohodnotí každý historický zápas moderním tříbodovým systémem pro spravedlivé srovnání napříč dekádami.
+        ### Význam barev v grafech
+        * **Zlatá barva:** Označuje 5 slavných sezón, kdy Kladno vyhrálo mistrovský titul (1974/75, 1975/76, 1976/77, 1977/78 a 1979/80).
+        * **Modrá barva:** Standardní ligové ročníky v nejvyšší soutěži (Extralize).
+        * **Červená barva:** Ročníky strávené v nižší soutěži (1. lize).
+
+        ---
+
+        ### Vysvětlení pojmů
+        * **Reálné body:** Skutečný historický bodový stav v tehdejší tabulce (např. do roku 2000 byly za výhru jen 2 body).
+        * **Přepočtené body (3b):** Přepočet všech historických výsledků na moderní tříbodový systém za účelem spravedlivého srovnání napříč dekádami.
         
         ---
         
-        ### 🔄 Vývoj bodového systému v historii
-        * **Do sezóny 1999/00:** Platil klasický 2bodový systém (2 body za výhru, 1 bod za remízu po 60 minutách).
-        * **Od sezóny 2000/01:** Došlo k zavedení současného 3bodového systému (3 body za výhru v základní hrací době, 2 body za výhru v prodloužení či nájezdech, 1 bod za prohru v prodloužení či nájezdech).
+        ### Vývoj bodového systému
+        * **Do sezóny 1999/00:** Platil starý dvoubodový systém (2 body za výhru, 1 bod za remízu).
+        * **Od sezóny 2000/01:** Platí moderní tříbodový systém (3 body za výhru v základní době).
         """)
 
 except Exception as e:
