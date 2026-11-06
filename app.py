@@ -50,21 +50,18 @@ try:
                     "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
                 ]
                 
-                # Vytvoření textové kategorie, kterou bude graf číst
-                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: 'Nižší soutěž (1. liga)' if str(x).strip() in nizsi_soutez else 'Nejvyšší soutěž (Extraliga)'
+                # DO SLOUPCE BARVA VLOŽÍME ROVNOU HEX KÓD
+                # Pokud je sezóna v nižší soutěži, dostane červenou (#FF4B4B), jinak modrou (#1F77B4)
+                vysledek['Barva_Grafu'] = vysledek['Sezóna'].apply(
+                    lambda x: '#FF4B4B' if str(x).strip() in nizsi_soutez else '#1F77B4'
                 )
                 
-                # Zde vynutíme přesné barvy pro jednotlivé názvy kategorií
+                # Streamlit podle sloupce 'Barva_Grafu' rovnou ty sloupce fyzicky obarví
                 st.bar_chart(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color="Soutěž",
-                    color_config={
-                        "Nejvyšší soutěž (Extraliga)": "#1F77B4",   # Modrá
-                        "Nižší soutěž (1. liga)": "#FF4B4B"        # Červená
-                    },
+                    color="Barva_Grafu",
                     use_container_width=True
                 )
                 
@@ -87,7 +84,7 @@ try:
                 sub_df = df[(df['sezona'] == sezona) & (df['kumul_3b'] >= cilove_body)]
                 if not sub_df.empty:
                     prvni_zapas = sub_df['poradi'].min()
-                    realne_body = int(sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values[0]) if 'kumul_realne' in df.columns else "-"
+                    realne_body = int(sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values) if 'kumul_realne' in df.columns else "-"
                     zaznamy.append({
                         "Sezóna": sezona, "Potřebný počet zápasů": int(prvni_zapas), "Reálné body v té chvíli": realne_body
                     })
