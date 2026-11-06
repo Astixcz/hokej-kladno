@@ -65,23 +65,15 @@ try:
                 
                 # Vytvoříme jasně pojmenovaný sloupec s kategorií soutěže
                 vysledek['Soutěž'] = vysledek['Sezóna'].apply(
-                    lambda x: 'Nižší soutěž (1. liga)' if str(x).strip() in nizsi_soutez else 'Nejvyšší soutěž (Extralize)'
+                    lambda x: 'Nižší soutěž (1. liga)' if str(x).strip() in nizsi_soutez else 'Nejvyšší soutěž (Extraliga)'
                 )
                 
-                # PEVNÉ MAPOVÁNÍ BAREV: Definujeme, že Nejvyšší je modrá (#1F77B4) a Nižší je červená (#FF4B4B)
-                # Tím vynutíme stálost barev i při malém počtu řádků
-                barevna_paleta = {
-                    'Nejvyšší soutěž (Extralize)': '#1F77B4',
-                    'Nižší soutěž (1. liga)': '#FF4B4B'
-                }
-                
-                # Vykreslení grafu s fixní paletou barev
+                # Vykreslení grafu s fixní paletou barev (opraveno - odstraněn vadný řádek)
                 st.bar_chart(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
                     color="Soutěž",
-                    vuer_config=None,
                     use_container_width=True
                 )
                 
@@ -105,7 +97,7 @@ try:
                 sub_df = df[(df['sezona'] == sezona) & (df['kumul_3b'] >= cilove_body)]
                 if not sub_df.empty:
                     prvni_zapas = sub_df['poradi'].min()
-                    realne_body = int(sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values[0]) if 'kumul_realne' in df.columns else "-"
+                    realne_body = int(sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values) if 'kumul_realne' in df.columns else "-"
                     zaznamy.append({
                         "Sezóna": sezona, 
                         "Potřebný počet zápasů": int(prvni_zapas),
@@ -134,7 +126,7 @@ try:
         ### ⏱️ Zavedení prodloužení
         1. **Sezóny 1983/84 – 1985/86:** Popvrve zavedeno pětiminutové prodloužení náhlé smrti. Pokud gól nepadl, zápas skončil remízou.
         2. **1986–1993:** Prodloužení zrušeno, návrat k remízám po 60 minutách.
-        3. **Od 1993/94:** Prodloužení vráceno natrvalo (nejdříve 5 na 5, od 1999/00 formát 4 na 4).
+        3. **Od 1993/94:** Prodloužení vráceno natrvalo (nejdříve 5 na 5, od 1999/00 format 4 na 4).
         
         ⚠️ *Poznámka k sezóně 2010/11:* V této sezóně proběhla tzv. **odpočtová aféra** (neoprávněné starty hráčů), kvůli které nesedí oficiální body s odehranými zápasy na ledě.
         """)
