@@ -64,7 +64,7 @@ try:
                 sub_df = df[(df['sezona'] == sezona) & (df['kumul_3b'] >= cilove_body)]
                 if not sub_df.empty:
                     prvni_zapas = sub_df['poradi'].min()
-                    realne_body = sub_df[sub_df['poradi'] == prvni_zapas]['kumul_rea'].values[0] if 'kumul_rea' in df.columns else "-"
+                    realne_body = int(sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values[0]) if 'kumul_realne' in df.columns else "-"
                     zaznamy.append({
                         "Sezóna": sezona, 
                         "Potřebný počet zápasů": int(prvni_zapas),
