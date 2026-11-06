@@ -45,18 +45,27 @@ try:
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
             if 'Přepočtené body (3b)' in vysledek.columns and 'Sezóna' in vysledek.columns:
-                # Jednotná fixní modrá barva pro celý graf – stabilní a spolehlivé řešení
+                nizsi_soutez = [
+                    "1983/84", "1984/85", "1986/87", "2002/03", 
+                    "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
+                ]
+                
+                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
+                    lambda x: 'Nižší soutěž (1. liga)' if str(x).strip() in nizsi_soutez else 'Nejvyšší soutěž (Extraliga)'
+                )
+                
                 st.bar_chart(
                     vysledek,
                     x="Sezóna",
                     y="Přepočtené body (3b)",
-                    color="#1F77B4",
+                    color="Soutěž",
                     use_container_width=True
                 )
                 
                 st.markdown("""
-                ℹ️ **Poznámka k soutěžím:** Graf zobrazuje historický vývoj bodů. Mezi sezóny v **nižší soutěži** (1. lize) patří: 
-                1983/84, 1984/85, 1986/87, 2002/03, 2014/15, 2015/16, 2016/17, 2017/18, 2018/19 a 2020/21.
+                🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
+                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize). \n
+                ⚠️ *Upozornění k zobrazení:* Pokud posuvník nastavíte na více než 52 zápasů, v grafu zůstanou pouze dvě sezóny. Vlivem automatického chování grafické knihovny Streamlit se v této chvíli mohou barvy sloupců (červená a modrá) navzájem prohodit. Spolehlivé zařazení sezón vyčtete vždy z textové tabulky výše.
                 """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
@@ -89,16 +98,32 @@ try:
             st.error(f"Chybí potřebné sloupce (sezona, poradi nebo kumul_3b).")
 
     elif verze == "3) Historické poznámky a pravidla":
-        st.header("📝 Historický kontext a změny pravidel")
+        st.header("📝 Jak kalkulačka funguje & Historický kontext")
+        
+        # Nová sekce s vysvětlivkami k otázkám
         st.markdown("""
-        ### 🔄 Vývoj bodového systému
-        * **Do sezóny 1999/00:** Platil klasický 2bodový systém (2 body za výhru, 1 za remízu).
-        * **Od sezóny 2006/07:** Kompletní zrušení remíz. Zavedeny samostatné nájezdy (vítěz 2 body, poražený 1 bod).
+        ### 💡 Návod k funkcím aplikace
+        
+        #### 1) Záložka: Kolik bodů po X zápasech?
+        * **K čemu slouží:** Pomocí posuvníku (slideru) si zvolíte konkrétní odehraný zápas od začátku základní části (např. 10. zápas sezóny). 
+        * **Co uvidíte:** Aplikace vám okamžitě porovná všechny sezóny od roku 1965 a ukáže, kolik bodů v tomto konkrétním okamžiku Kladno mělo. Můžete tak snadno porovnat historické starty do sezón. Graf dole vám vizuálně ukáže nejúspěšnější roky.
+        
+        #### 2) Záložka: Kolik zápasů na X bodů?
+        * **K čemu slouží:** Zadáte cílové číslo (např. 20 bodů) a aplikace prohledá historii Kladna.
+        * **Co uvidíte:** U každé sezóny zjistíte přesné chronologické číslo zápasu, ve kterém Kladno na tuto bodovou metu poprvé dosáhlo (při přepočtu na 3bodový systém). Pokud Kladno v daném roce takto úspěšné nebylo, uvidíte text *„Nedosáhnuto“*. Sloupec *„Reálné body v té chvíli“* ukazuje, kolik bodů svítilo v tabulce podle tehdejších historických pravidel.
+        
+        ---
+        
+        ### 🔄 Vývoj bodového systému v historii
+        * **Do sezóny 1999/00:** Platil klasický 2bodový systém (2 body za výhru, 1 za remízu). V aplikaci jsou tyto sezóny pro spravedlivé srovnání matematicky přepočteny na moderní model (Výhra = 3 body, Remíza = 1 bod).
+        * **Od sezóny 2006/07:** Kompletní zrušení remíz v české Extralize. Zavedeny samostatné nájezdy (vítěz bere 2 body, poražený v prodloužení/nájezdech 1 bod).
+        
         ### ⏱️ Zavedení prodloužení
-        1. **Sezóny 1983/84 – 1985/86:** Pětiminutové prodloužení náhlé smrti. Pokud gól nepadl, remíza.
-        2. **1986–1993:** Prodloužení zrušeno, návrat k remízám po 60 minutách.
-        3. **Od 1993/94:** Prodloužení vráceno natrvalo.
-        ⚠️ *Poznámka k sezóně 2010/11:* V této sezóně proběhla odpočtová aféra (neoprávněné starty hráčů).
+        1. **Sezóny 1983/84 – 1985/86:** V československé lize poprvé krátce zavedeno pětiminutové prodloužení systémem „náhlé smrti“. Pokud gól nepadl, zápas přesto skončil remízou.
+        2. **1986–1993:** Prodloužení bylo zrušeno, po 60 minutách následovala okamžitá remíza.
+        3. **Od 1993/94:** Prodloužení vráceno natrvalo (nejdříve v klasickém formátu 5 na 5, od sezóny 1999/00 atraktivnější formát 4 na 4).
+        
+        ⚠️ *Poznámka k sezóně 2010/11:* V této sezóně postihla český hokej tzv. **odpočtová aféra** za neoprávněné starty hráčů (včetně Kladna). Zápasy odehrané na ledě a body získané u zeleného stolu se proto mohou lišit.
         """)
 
 except Exception as e:
