@@ -47,6 +47,11 @@ try:
             }
             vysledek = vysledek.rename(columns=přejmenování_zobrazení)
             
+            if not vysledek.empty and 'Přepočtené body (3b)' in vysledek.columns:
+                max_body_v_koliku = vysledek['Přepočtené body (3b)'].max()
+                nej_sezony = vysledek[vysledek['Přepočtené body (3b)'] == max_body_v_koliku]['Sezóna'].tolist()
+                st.info(f"🏆 **Historický rekord Kladna:** Po {pocet_zapasu} zápasech byla nejúspěšnější sezóna **{', '.join(nej_sezony)}** ({max_body_v_koliku} bodů po přepočtu na 3b systém).")
+
             st.subheader(f"Stav Kladna po {pocet_zapasu}. odehraném zápase:")
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
@@ -80,12 +85,14 @@ try:
                 🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
                 """)
         else:
-            st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
+            st.error("V souboru chybí sloupec pro pořadí zápasů.")
 
     elif verze == "2) Kolik zápasů na X bodů?":
         st.header("⏱️ Rychlost dosažení bodové mety")
         cilove_body = st.number_input("Zadejte cílový počet bodů (přepočtených na 3b systém):", min_value=1, max_value=120, value=20)
         
+        skryt_nedosazeno = st.checkbox("Skrýt sezóny, které na tuto metu nedosáhly", value=False)
+
         if 'sezona' in df.columns and 'kumul_3b' in df.columns and 'poradi' in df.columns:
             sezony = df['sezona'].unique()
             zaznamy = []
@@ -101,15 +108,15 @@ try:
                         "Sezóna": sezona, "Potřebný počet zápasů": int(prvni_zapas), "Reálné body v té chvíli": realne_body
                     })
                 else:
-                    zaznamy.append({
-                        "Sezóna": sezona, "Potřebný počet zápasů": "Nedosáhnuto", "Reálné body v té chvíli": "-"
-                    })
+                    if not skryt_nedosazeno:
+                        zaznamy.append({
+                            "Sezóna": sezona, "Potřebný počet zápasů": "Nedosáhnuto", "Reálné body v té chvíli": "-"
+                        })
                     
             vysledne_df = pd.DataFrame(zaznamy)
             st.subheader(f"Kolik zápasů potřebovalo Kladno na získání minimálně {cilove_body} bodů:")
             st.dataframe(vysledne_df, use_container_width=True)
 
-            # --- SEŘAZENÝ GRAF RYCHLOSTI ---
             graf_df = vysledne_df[vysledne_df["Potřebný počet zápasů"] != "Nedosáhnuto"].copy()
             
             if not graf_df.empty:
@@ -118,7 +125,6 @@ try:
                     lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
                 )
                 
-                # Seřazení dat pro graf od nejrychlejší sezóny (nejméně zápasů)
                 graf_df = graf_df.sort_values(by="Potřebný počet zápasů", ascending=True)
 
                 st.subheader(f"📊 Žebříček sezón podle rychlosti dosažení {cilove_body} bodů")
@@ -137,7 +143,6 @@ try:
                     template="plotly_white"
                 )
                 
-                # Vynucení seřazení osy X podle našich seřazených dat
                 fig2.update_xaxes(categoryorder="array", categoryarray=graf_df['Sezóna'], title="Sezóna")
                 fig2.update_layout(
                     margin=dict(l=0, r=0, t=20, b=0),
@@ -147,36 +152,35 @@ try:
             else:
                 st.warning(f"V žádné historické sezóně Kladno nedosáhlo na hranici {cilove_body} bodů.")
         else:
-            st.error(f"Chybí potřebné sloupce (sezona, poradi nebo kumul_3b).")
+            st.error("Chybí potřebné sloupce (sezona, poradi nebo kumul_3b).")
 
     elif verze == "3) Historické poznámky a pravidla":
         st.header("📝 Jak kalkulačka funguje & Historický kontext")
         st.markdown("""
         ### 💡 Návod k funkcím aplikace
         
-        📌 **Tip pro práci s tabulkami:** Kliknutím na libovolný název záhlaví sloupce (např. *Reálné body*, *Přepočtené body* nebo *Potřebný počet zápasů*) můžete data v tabulce okamžitě **vzestupně nebo sestupně seřadit**. To vám umožní bleskově najít ty historicky nejlepší a nejhorší sezóny!
+        📌 **Tip pro práci s tabulkami:** Kliknutím na libovolný název záhlaví sloupce můžete data v tabulce okamžitě **vzestupně nebo sestupně seřadit**. To vám umožní bleskově najít ty historicky nejlepší a nejhorší sezóny!
         
         #### 1) Záložka: Kolik bodů po X zápasech?
-        * **K čemu slouží:** Pomocí posuvníku (slideru) si zvolíte konkrétní odehraný zápas od začátku základní části (např. 10. zápas sezóny). 
-        * **Co uvidíte:** Aplikace vám okamžitě porovná všechny sezóny od roku 1965 a ukáže, kolik bodů v tomto konkrétním okamžiku Kladno mělo.
-        * **Důležité upozornění:** Pokud na posuvníku nastavíte vyšší počet zápasů, než kolik se v daném historickém roce celkem odehrálo, tato konkrétní sezóna z tabulky i z grafu **automaticky zmizí** (nemá pro tento bod žádná data). Graf dole vám vizuálně srovná všechny aktivní sezóny vedle sebe.
+        * **K čemu slouží:** Pomocí posuvníku si zvolíte konkrétní odehraný zápas od začátku základní části.
+        * **Co uvidíte:** Aplikace okamžitě porovná všechny sezóny od roku 1965 a ukáže přepočtený stav bodů.
+        * **Důležité upozornění:** Pokud nastavíte vyšší počet zápasů, než se tehdy odehrálo, sezóna z grafů i tabulky zmizí.
         
         #### 2) Záložka: Kolik zápasů na X bodů?
-        * **K čemu slouží:** Zadáte cílové číslo (např. 20 bodů) a aplikace prohledá historii Kladna.
-        * **Co uvidíte:** U každé sezóny zjistíte přesné chronologické číslo zápasu, ve kterém Kladno na tuto bodovou metu poprvé dosáhlo. Pokud Kladno v daném roce takto úspěšné nebylo, uvidíte text *„Nedosáhnuto“*.
+        * **K čemu slouží:** Zadáte cílové číslo a aplikace najde, jak rychle na něj Kladno dosáhlo.
+        * **Co uvidíte:** Číslo zápasu, kdy byla meta poprvé pokořena. Pokud se tak nestalo, uvidíte text 'Nedosáhnuto'. **Pokud zaškrtnete políčko pro skrytí, tyto neúspěšné sezóny se v tabulce vůbec nezobrazí.**
         
         ---
 
         ### 🔍 Vysvětlení pojmů (Body v aplikaci)
-        
-        * **Reálné body:** Ukazují skutečný stav, jaký tehdy v dané sezóně svítil v oficiální ligové tabulce. Pokud se zápas hrál v roce 1980, za výhru tehdy Kladno dostalo do tabulky pouze 2 body.
-        * **Přepočtené body (3b):** Toto je hlavní motor naší kalkulačky. Vezme každý historický zápas a ohodnotí ho podle dnešních pravidel (Výhra = 3 body). Díky tomu můžeme spravedlivě srovnat výkon týmu ze 70. let s týmem ze současnosti.
+        * **Reálné body:** Skutečný stav, jaký tehdy platil v oficiální ligové tabulce (např. do roku 2000 byly za výhru jen 2 body).
+        * **Přepočtené body (3b):** Hlavní motor kalkulačky. Ohodnotí každý historický zápas moderním tříbodovým systémem pro spravedlivé srovnání napříč dekádami.
         
         ---
         
         ### 🔄 Vývoj bodového systému v historii
         * **Do sezóny 1999/00:** Platil klasický 2bodový systém (2 body za výhru, 1 bod za remízu po 60 minutách).
-        * **Od sezóny 2000/01:** Došlo k celorepublikovému zavedení současného 3bodového systému (3 body za výhru v základní hrací době, 2 body za výhru v prodloužení/nájezdech, 1 bod za prohru v prodloužení/nájezdech).
+        * **Od sezóny 2000/01:** Došlo k zavedení současného 3bodového systému (3 body za výhru v základní hrací době, 2 body za výhru v prodloužení či nájezdech, 1 bod za prohru v prodloužení či nájezdech).
         """)
 
 except Exception as e:
