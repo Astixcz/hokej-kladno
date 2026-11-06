@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 st.set_page_config(page_title="Kladenská Hokejová Historie", layout="wide")
 
@@ -50,20 +51,23 @@ try:
                     "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
                 ]
                 
-                # DO SLOUPCE BARVA VLOŽÍME ROVNOU HEX KÓD
-                # Pokud je sezóna v nižší soutěži, dostane červenou (#FF4B4B), jinak modrou (#1F77B4)
-                vysledek['Barva_Grafu'] = vysledek['Sezóna'].apply(
-                    lambda x: '#FF4B4B' if str(x).strip() in nizsi_soutez else '#1F77B4'
+                # Vytvoření jasného textového sloupce pro soutěž
+                vysledek['Soutěž'] = vysledek['Sezóna'].apply(
+                    lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
                 )
                 
-                # Streamlit podle sloupce 'Barva_Grafu' rovnou ty sloupce fyzicky obarví
-                st.bar_chart(
-                    vysledek,
-                    x="Sezóna",
-                    y="Přepočtené body (3b)",
-                    color="Barva_Grafu",
-                    use_container_width=True
-                )
+                # VYTVOŘENÍ STRIKTNÍHO GRAFU POMOCÍ ALTAIRU
+                # Zde natvrdo svážeme konkrétní text s konkrétní barvou
+                graf = alt.Chart(vysledek).mark_bar().encode(
+                    x=alt.X('Sezóna:N', sort=None, title='Sezóna'),
+                    y=alt.Y('Přepočtené body (3b):Q', title='Přepočtené body (3b)'),
+                    color=alt.Color('Soutěž:N', scale=alt.Scale(
+                        domain=['Extraliga (Nejvyšší)', '1. liga (Nižší)'],
+                        range=['#1F77B4', '#FF4B4B']
+                    ), title='Soutěž')
+                ).properties(height=400).interactive()
+                
+                st.altair_chart(graf, use_container_width=True)
                 
                 st.markdown("""
                 🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
