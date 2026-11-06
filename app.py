@@ -55,7 +55,6 @@ try:
                     lambda x: '1. liga (Nižší)' if str(x).strip() in nizsi_soutez else 'Extraliga (Nejvyšší)'
                 )
                 
-                # Profesionální graf pomocí Plotly Express s nekompromisním mapováním barev
                 fig = px.bar(
                     vysledek,
                     x="Sezóna",
@@ -69,7 +68,13 @@ try:
                     template="plotly_white"
                 )
                 
-                # Doladění vzhledu grafu, aby lícoval s aplikací
+                # KLÍČOVÁ OPRAVA: Seřadit osu X striktně podle chronologického pořadí v tabulce
+                fig.update_xaxes(
+                    categoryorder="array", 
+                    categoryarray=vysledek['Sezóna'],
+                    title="Sezóna"
+                )
+                
                 fig.update_layout(
                     margin=dict(l=0, r=0, t=20, b=0),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
@@ -79,7 +84,8 @@ try:
                 
                 st.markdown("""
                 🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
-                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
+                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize). \n
+                ⚠️ *Upozornění k zobrazení:* Pokud posuvník nastavíte na více než 52 zápasů, v grafu zůstanou pouze dvě sezóny. Vlivem automatického chování grafické knihovny Streamlit se v této chvíli mohou barvy sloupců (červená a modrá) navzájem prohodit. Spolehlivé zařazení sezón vyčtete vždy z textové tabulky výše.
                 """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů.")
@@ -97,7 +103,6 @@ try:
                 if not sub_df.empty:
                     prvni_zapas = sub_df['poradi'].min()
                     
-                    # OPRAVA CHYBY SCALARS: Vytáhneme hodnotu bezpečně pomocí indexu [0] pro případ duplicit
                     hodnoty_realne = sub_df[sub_df['poradi'] == prvni_zapas]['kumul_realne'].values
                     realne_body = int(hodnoty_realne[0]) if len(hodnoty_realne) > 0 and 'kumul_realne' in df.columns else "-"
                     
