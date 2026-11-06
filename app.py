@@ -41,38 +41,45 @@ try:
             pocet_zapasu = st.slider("Zadejte počet odehraných zápasů v sezóně:", 1, max_zapasu, 10)
             
             # Výběr sloupců podle toho, co v tabulce opravdu je
-            dostupne_sloupce = [col for col in ['sezona', 'kumul_rea', 'kumul_3b', 'poznamka'] if col in df.columns]
-            vysledek = df[df['poradi'] == pocet_zapasu][dostupne_sloupce]
+            dostupne_sloupce = [col for col in ['sezona', 'kumul_realne', 'kumul_3b', 'poznamka'] if col in df.columns]
+            vysledek = df[df['poradi'] == pocet_zapasu][dostupne_sloupce].copy()
+            
+            # Přejmenování sloupců pro hezčí zobrazení uživateli
+            přejmenování_zobrazení = {
+                'sezona': 'Sezóna',
+                'kumul_realne': 'Reálné body',
+                'kumul_3b': 'Přepočtené body (3b)',
+                'poznamka': 'Poznámka'
+            }
+            vysledek = vysledek.rename(columns=přejmenování_zobrazení)
             
             st.subheader(f"Stav Kladna po {pocet_zapasu}. odehraném zápase:")
             st.dataframe(vysledek.reset_index(drop=True), use_container_width=True)
             
-            if 'kumul_3b' in df.columns and 'sezona' in df.columns:
-                        # Seznam sezón v nižší soutěži (1. liga)
-        nizsi_soutez = [
-            "1983/84", "1984/85", "1986/87", "2002/03", 
-            "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
-        ]
-        
-        # Vytvoření barevného profilu pro každou sezónu v grafu
-        # Pokud je sezóna v seznamu, bude červená (#FF4B4B), jinak modrá (#1F77B4)
-        vysledek['barva'] = vysledek['Sezóna'].apply(lambda x: '#FF4B4B' if str(x).strip() in nizsi_soutez else '#1F77B4')
-        
-        # Vykreslení pokročilejšího grafu s vlastními barvami
-        st.bar_chart(
-            vysledek,
-            x="Sezóna",
-            y="Přepočtené body (3b)",
-            color="barva",
-            use_container_width=True
-        )
-        
-        # Přidání vysvětlující poznámky (legendy) pod graf
-        st.markdown("""
-        🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). 
-        🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
-        """)
-
+            if 'Přepočtené body (3b)' in vysledek.columns and 'Sezóna' in vysledek.columns:
+                # Seznam sezón v nižší soutěži (1. liga)
+                nizsi_soutez = [
+                    "1983/84", "1984/85", "1986/87", "2002/03", 
+                    "2014/15", "2015/16", "2016/17", "2017/18", "2018/19", "2020/21"
+                ]
+                
+                # Vytvoření barevného profilu pro každou sezónu v grafu
+                vysledek['barva'] = vysledek['Sezóna'].apply(lambda x: '#FF4B4B' if str(x).strip() in nizsi_soutez else '#1F77B4')
+                
+                # Vykreslení pokročilejšího grafu s vlastními barvami
+                st.bar_chart(
+                    vysledek,
+                    x="Sezóna",
+                    y="Přepočtené body (3b)",
+                    color="barva",
+                    use_container_width=True
+                )
+                
+                # Přidání vysvětlující poznámky (legendy) pod graf
+                st.markdown("""
+                🔴 **Červeně zvýrazněné sloupce** značí sezóny, ve kterých Kladno působilo v **nižší soutěži** (1. lize / tehdejší I. ČNHL). \n
+                🔵 **Modré sloupce** značí sezóny v nejvyšší soutěži (Extralize / tehdejší I. lize).
+                """)
         else:
             st.error(f"V souboru chybí sloupec pro pořadí zápasů. Dostupné sloupce jsou: {list(df.columns)}")
 
