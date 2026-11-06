@@ -45,8 +45,9 @@ try:
         else:
             return "Extraliga (Nejvyšší soutěž)"
 
+    # Změněno na sytou metalickou zlatou (#D4AF37)
     barevna_mapa = {
-        "Mistrovská sezóna (Titul)": "#FFD700",
+        "Mistrovská sezóna (Titul)": "#D4AF37",
         "Extraliga (Nejvyšší soutěž)": "#1F77B4",
         "1. liga (Nižší soutěž)": "#FF4B4B"
     }
