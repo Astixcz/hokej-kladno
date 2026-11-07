@@ -4,7 +4,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Kladenská Hokejová Historie", layout="wide")
 
-st.title("🏒 Historická hokejová kalkulačka Kladna — Verze 1.0")
+st.title("🏒 Historická hokejová kalkulačka Kladna — Verze 1.1")
 st.write("Analýza výsledků od sezóny 1965/66 do 2025/26")
 
 @st.cache_data
