@@ -58,7 +58,7 @@ try:
         
         if 'poradi' in df.columns:
             max_zapasu = int(df['poradi'].max())
-            pocet_zapasu = st.slider("Zadejte počet odehraných zápasů v sezóně:", 1, max_zapasu, 19)
+            pocet_zapasu = st.slider("Zadejte počet odehraných zápasů v sezóně:", 1, max_zapasu, 22)
             
             dostupne_sloupce = [col for col in ['sezona', 'kumul_realne', 'kumul_3b', 'poznamka'] if col in df.columns]
             vysledek = df[df['poradi'] == pocet_zapasu][dostupne_sloupce].copy()
